@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DNS Resolver Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        #container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #domainInput {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DNS Resolver</h1>
+    </header>
+    <div id="container">
+        <input type="text" id="domainInput" placeholder="Enter a domain (e.g., example.com)">
+        <button onclick="resolveDomain()">Resolve</button>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        function resolveDomain() {
+            var domain = document.getElementById('domainInput').value;
+            fetch(`http://localhost:8080/resolve/${domain}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.server);
+                    document.getElementById('response').textContent = `Domain: ${data.domain}, IP: ${data.ip}`;
+                })
+                .catch(error => {
+                    console.log(error);
+                    document.getElementById('response').textContent = 'Error: ' + error;
+                });
+        }
+    </script>
+</body>
+</html>
