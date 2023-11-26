@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Domain-IP Pair</title>
+    <style>
+        #addDomainForm {
+            display: none;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        #container {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Add Domain-ip Pair</h1>
+    </header>
+    <div id="container">
+        <form id="auth">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="Enter your username" required>
+
+            <label for="password">Password:</label>
+            <input type="text" id="password" name="password" placeholder="Enter your password" required>
+
+            <button type="submit">Enter</button>
+            <a href="client.html">Back</a>
+        </form>
+        <form id="addDomainForm">
+            <label for="domain">Domain:</label>
+            <input type="text" id="domain" name="domain" placeholder="Enter a domain (e.g., example.com)" required>
+
+            <label for="ip">IP Address:</label>
+            <input type="text" id="ip" name="ip" placeholder="Enter an IP address (e.g., 192.168.1.1)" required>
+
+            <button type="submit">Add Domain-IP Pair</button>
+            <a href="client.html">Back</a>
+        </form>
+    </div>
+
+    <script>
+        const auth = document.getElementById('auth');
+        const addDomainForm = document.getElementById('addDomainForm');
+
+        auth.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if(username=="admin" && password=="admin"){
+                auth.style.display = 'none';
+                addDomainForm.style.display = 'block';
+            } else {
+                alert('Invalid username or password.');
+            }
+        });
+
+        addDomainForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const domain = document.getElementById('domain').value;
+            const ip = document.getElementById('ip').value;
+
+            console.log(JSON.stringify({
+                        domain: domain,
+                        ip: ip,
+                    }));
+
+            try {
+                const response = await fetch('http://localhost:8080/add-domain-ip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        domain: domain,
+                        ip: ip,
+                    }),
+                });
+
+                if (response.ok) {
+                    alert('Domain-ip pair added successfully!');
+                } else {
+                    alert('Error adding domain-ip pair.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred.');
+            }
+        });
+    </script>
+</body>
+</html>

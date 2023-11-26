@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const port = 3003;
 
 const dnsRecords = {
@@ -18,6 +19,8 @@ const dnsRecords = {
 };
 
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.get('/resolve/:domain', async (req, res) => {
     const domain = req.params.domain;
@@ -43,6 +46,21 @@ app.get('/resolve/:domain', async (req, res) => {
             res.status(500).send({ error: 'Internal server error' });
         }
     }
+});
+
+app.post('/add-domain-ip', (req, res) => {
+    const { domain, ip } = req.body;
+    console.log(`Adding domain-ip pair to server: ${domain} -> ${ip}`);
+
+    if (!domain || !ip) {
+        console.error('Invalid domain or IP address.');
+        return res.status(400).send({ error: 'Invalid data' });
+    }
+
+    dnsRecords[domain] = ip;
+
+    console.log(`Added domain-ip pair to server: ${domain} -> ${ip}`);
+    res.status(200).send({ message: 'Domain-IP pair added to the server' });
 });
 
 app.listen(port, () => console.log(`Server running on port ${port}`));

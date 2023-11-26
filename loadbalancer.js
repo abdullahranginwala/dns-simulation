@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const app = express();
 const port = 8080;
 
@@ -10,6 +11,8 @@ const servers = ['http://localhost:3001', 'http://localhost:3002', 'http://local
 // Initialize an empty cache object
 const cache = {};
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
 app.use(cors());
 
 app.get('/resolve/:domain', async (req, res) => {
@@ -60,6 +63,32 @@ app.get('/resolve/:domain', async (req, res) => {
 
     console.log(`All servers failed to resolve ${domain}`);
     res.status(500).send({ error: 'Internal server error' });
+});
+
+app.post('/add-domain-ip', async (req, res) => {
+    const { domain, ip } = req.body;
+    console.log(req.body);
+    console.log(`Adding domain-ip pair to load balancer: ${domain} -> ${ip}`);
+
+    currentServer = (currentServer + 1) % servers.length;
+    const selectedServer = currentServer;
+    if (selectedServer === null) {
+        console.error('No server available to add the domain-IP pair.');
+        return res.status(500).send({ error: 'No server available' });
+    }
+
+    const serverUrl = servers[selectedServer];
+
+    try {
+        console.log(`Sending data to server: ${serverUrl}`);
+        let response = await axios.post(`${serverUrl}/add-domain-ip`, { domain, ip });
+        console.log(`Response from server:`, response.data);
+
+        return res.send(response.data);
+    } catch (error) {
+        console.error(`Error from server:`, error.message);
+        res.status(500).send({ error: 'Internal server error' });
+    }
 });
 
 app.listen(port, () => console.log(`Load Balancer running on http://localhost:${port}`));
