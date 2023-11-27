@@ -8,7 +8,6 @@ const port = 8080;
 let currentServer = 0;
 const servers = ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003'];
 
-// Initialize an empty cache object
 const cache = {};
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -18,7 +17,6 @@ app.use(cors());
 app.get('/resolve/:domain', async (req, res) => {
     const domain = req.params.domain;
 
-    // Check if the domain is in the cache
     if (cache[domain]) {
         const { ip, usageCount } = cache[domain];
         console.log(`Cache hit for ${domain}`);
@@ -39,10 +37,8 @@ app.get('/resolve/:domain', async (req, res) => {
             let response = await axios.get(`${serverUrl}/resolve/${domain}`);
             console.log(`Response from ${serverUrl}:`, response.data);
 
-            // Store the response in the cache and update usage count
             cache[domain] = { ip: response.data.ip, usageCount: 1 };
 
-            // Check for least used domain
             for (const key in cache) {
                 if (cache[key].usageCount < leastUsedCount) {
                     leastUsedDomain = key;
@@ -50,7 +46,6 @@ app.get('/resolve/:domain', async (req, res) => {
                 }
             }
 
-            // Remove the least used domain if the cache size exceeds 10
             if (Object.keys(cache).length > 10) {
                 delete cache[leastUsedDomain];
             }

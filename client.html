@@ -79,17 +79,42 @@
     <script>
         function resolveDomain() {
             var domain = document.getElementById('domainInput').value;
-            fetch(`http://localhost:8080/resolve/${domain}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.server);
-                    document.getElementById('response').textContent = `Domain: ${data.domain}, IP: ${data.ip}`;
-                })
-                .catch(error => {
-                    console.log(error);
-                    document.getElementById('response').textContent = 'Error: ' + error;
-                });
+            var cachedData = getCachedData(domain);
+    
+            if (cachedData) {
+                displayResult(cachedData.domain, cachedData.ip, true);
+            } else {
+                fetch(`http://localhost:8080/resolve/${domain}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.server);
+                        cacheData(domain, data);
+                        displayResult(data.domain, data.ip, false);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        document.getElementById('response').textContent = 'Error: ' + error;
+                    });
+            }
+        }
+    
+        function getCachedData(domain) {
+            var cached = localStorage.getItem(domain);
+            if (cached) {
+                return JSON.parse(cached);
+            }
+            return null;
+        }
+    
+        function cacheData(domain, data) {
+            localStorage.setItem(domain, JSON.stringify(data));
+        }
+    
+        function displayResult(domain, ip, cached) {
+            const source = cached?"cache":"server";
+            document.getElementById('response').textContent = `Domain: ${domain}, IP: ${ip} \n (Retrieved from ${source})`;
         }
     </script>
+    
 </body>
 </html>

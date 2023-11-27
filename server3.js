@@ -36,7 +36,10 @@ app.get('/resolve/:domain', async (req, res) => {
             for (let url of otherServers) {
                 try {
                     let response = await axios.get(`${url}/resolve/${domain}`);
-                    if (response.status === 200) return res.send(response.data);
+                    if (response.status === 200) {
+                        dnsRecords[domain] = response.data.ip;
+                        return res.send(response.data);
+                    }
                 } catch (error) {
                     continue;
                 }
