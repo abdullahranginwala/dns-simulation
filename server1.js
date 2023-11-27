@@ -18,6 +18,8 @@ const dnsRecords = {
     'yahoo.com': '72.30.35.9'
 };
 
+let encountered = {};
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.use(express.json());
@@ -28,17 +30,25 @@ app.get('/resolve/:domain', async (req, res) => {
 
     console.log("H1");
 
+    if(encountered[domain]) {
+        return res.status(404).send({ error: 'Domain not found' });
+    }
+
+    encountered[domain] = true;
+
     if (ip) {
-        return res.send({ domain, ip });
+        encountered = {};
+        return res.status(200).send({ domain, ip });
     } else {
         try {
             let otherServers = ['http://localhost:3002', 'http://localhost:3003']; 
             for (let url of otherServers) {
                 try {
                     let response = await axios.get(`${url}/resolve/${domain}`);
-                    if (response.status === 200) {
+                    if (response.status == 200) {
                         dnsRecords[domain] = response.data.ip;
-                        return res.send(response.data);
+                        encountered = {};
+                        return res.status(200).send(response.data);
                     }
                 } catch (error) {
                     continue;
@@ -49,6 +59,7 @@ app.get('/resolve/:domain', async (req, res) => {
             res.status(500).send({ error: 'Internal server error' });
         }
     }
+    encountered = {};
 });
 
 app.post('/add-domain-ip', (req, res) => {

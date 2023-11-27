@@ -30,34 +30,32 @@ app.get('/resolve/:domain', async (req, res) => {
     let leastUsedDomain = null;
     let leastUsedCount = Infinity;
 
-    for (let i = 0; i < servers.length; i++) {
-        const serverUrl = servers[currentServer + i];
-        try {
-            console.log(`Trying server: ${serverUrl}`);
-            let response = await axios.get(`${serverUrl}/resolve/${domain}`);
-            console.log(`Response from ${serverUrl}:`, response.data);
+    const serverUrl = servers[currentServer];
+    try {
+        console.log(`Trying server: ${serverUrl}`);
+        let response = await axios.get(`${serverUrl}/resolve/${domain}`);
+        console.log(`Response from ${serverUrl}:`, response.data);
 
-            cache[domain] = { ip: response.data.ip, usageCount: 1 };
+        cache[domain] = { ip: response.data.ip, usageCount: 1 };
 
-            for (const key in cache) {
-                if (cache[key].usageCount < leastUsedCount) {
-                    leastUsedDomain = key;
-                    leastUsedCount = cache[key].usageCount;
-                }
+        for (const key in cache) {
+            if (cache[key].usageCount < leastUsedCount) {
+                leastUsedDomain = key;
+                leastUsedCount = cache[key].usageCount;
             }
-
-            if (Object.keys(cache).length > 10) {
-                delete cache[leastUsedDomain];
-            }
-
-            return res.send(response.data);
-        } catch (error) {
-            console.error(`Error from ${serverUrl}:`, error.message);
         }
+
+        if (Object.keys(cache).length > 10) {
+            delete cache[leastUsedDomain];
+        }
+
+        return res.status(200).send(response.data);
+    } catch (error) {
+        console.error(`Error from ${serverUrl}:`, error.message);
     }
 
     console.log(`All servers failed to resolve ${domain}`);
-    res.status(500).send({ error: 'Internal server error' });
+    res.status(404).send({ error: 'No domain found' });
 });
 
 app.post('/add-domain-ip', async (req, res) => {
